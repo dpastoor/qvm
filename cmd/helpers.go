@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
+	"io"
 	"os"
 	"strings"
 
@@ -59,4 +61,13 @@ func setLogLevel(level string) {
 	default:
 		log.Fatalf("Invalid log level: %s", logLevel)
 	}
+}
+
+func prettyEncode(data interface{}, out io.Writer) error {
+	enc := json.NewEncoder(out)
+	enc.SetIndent("", "    ")
+	if err := enc.Encode(data); err != nil {
+		return err
+	}
+	return nil
 }

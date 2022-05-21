@@ -8,6 +8,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func GetRelease(client *github.Client, release string) (*github.RepositoryRelease, error) {
+	rel, resp, err := client.Repositories.GetReleaseByTag(
+		context.Background(),
+		"quarto-dev",
+		"quarto-cli",
+		release,
+	)
+	log.WithField("resp", resp).Trace("get-latest-release")
+	if err != nil {
+		return nil, err
+	}
+	return rel, err
+}
+
 func GetLatestRelease(client *github.Client) (*github.RepositoryRelease, error) {
 	rel, resp, err := client.Repositories.GetLatestRelease(
 		context.Background(),
