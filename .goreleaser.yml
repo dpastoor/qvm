@@ -1,0 +1,112 @@
+project_name: qvm
+
+release:
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
+  footer: |
+    ## Installation Instructions
+    ### Mac
+    first time:
+    ```
+    brew tap dpastoor/tap
+    brew install qvm
+    ```
+    upgrade:
+    ```
+    brew upgrade qvm
+    ```
+    ### Linux
+    ```
+    sudo wget https://github.com/dpastoor/qvm/releases/download/{{ .Tag }}/qvm_Linux_amd64.tar.gz -O /tmp/qvm.tar.gz
+    sudo tar xzf /tmp/qvm.tar.gz qvm
+    sudo mv qvm /usr/local/bin/qvm
+    sudo chmod +x /usr/local/bin/qvm
+    ```
+
+before:
+  hooks:
+    - go mod tidy
+    - ./scripts/completions.sh
+    - ./scripts/manpages.sh
+
+builds:
+  - 
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+    - amd64
+    # - arm64
+    # - arm
+    # goarm:
+    # - "7"
+
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+    format_overrides:
+    - goos: windows
+      format: zip
+    files:
+      - README.md
+      - LICENSE
+      - completions/*
+      - manpages/*   
+
+brews:
+  # Repository to push the tap to.
+  -
+    tap:
+      owner: dpastoor 
+      name: homebrew-tap 
+    folder: Formula
+    goarm: "7"
+    test: |
+      system "#{bin}/qvm -v"
+    install: |-
+      bin.install "qvm"
+      bash_completion.install "completions/qvm.bash" => "qvm"
+      zsh_completion.install "completions/qvm.zsh" => "_qvm"
+      fish_completion.install "completions/qvm.fish"
+      man1.install "manpages/qvm.1.gz"
+
+publishers:
+  - name: fury.io
+    ids:
+    - packages
+    env:
+    - 'FURY_TOKEN={{ .Env.FURY_TOKEN }}'
+    cmd: ./scripts/fury-upload.sh {{ .ArtifactName }}
+
+nfpms:
+  - file_name_template: '{{ .ConventionalFileName }}'
+    id: packages
+    homepage:  https://github.com/dpastoor/qvm
+    description: quarto version manager 
+    maintainer: Devin Pastoor <devin.pastoor@gmail.com>
+    license: MIT
+    contents:
+      - src: ./completions/qvm.bash
+        dst: /etc/bash_completion.d/qvm
+      - src: ./completions/qvm.fish
+        dst: /usr/share/fish/completions/qvm.fish
+      - src: ./completions/qvm.zsh
+        dst: /usr/local/share/zsh/site-functions/_qvm
+      - src: ./manpages/qvm.1.gz
+        dst: /usr/share/man/man1/qvm.1.gz
+    formats:
+    - apk
+    - deb
+    - rpm
+
+snapshot:
+  name_template: '{{ incpatch .Version }}-next'
