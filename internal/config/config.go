@@ -14,7 +14,7 @@ func (cfg Config) Validate() error {
 	return nil
 }
 
-func Read(path string) (Config, error) {
+func read(path string) (Config, error) {
 	var config Config
 	file, err := os.ReadFile(path)
 	if err != nil {

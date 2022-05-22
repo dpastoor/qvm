@@ -55,7 +55,8 @@ func newRootCmd(version string) *rootCmd {
 	cmd.AddCommand(newDebugCmd(root.cfg))
 	cmd.AddCommand(newManCmd().cmd)
 	cmd.AddCommand(newLsCmd().cmd)
-
+	cmd.AddCommand(newPathRootCmd().cmd)
+	cmd.AddCommand(newPathCmd().cmd)
 	root.cmd = cmd
 	return root
 }
