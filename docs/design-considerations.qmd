@@ -1,0 +1,112 @@
+---
+title: design considerations
+---
+
+`qvm` is designed around maintaining the various quarto versions in 
+a `versions` directory such that each is available at
+`$XDG_CONFIG_HOME/qvm/versions/$QUARTO_VERSION`. Within each directory will
+be the quarto folder structure of `bin` and `share` 
+
+```
+.
+├── bin
+│  ├── quarto
+│  ├── quarto.js
+│  ├── tools
+│  └── vendor
+└── share
+   ├── build
+   ├── capabilities
+   ├── COPYING.md
+   ├── COPYRIGHT
+   ├── deno_std
+   ├── editor
+   ├── env
+   ├── filters
+   ├── formats
+   ├── js
+   ├── jupyter
+   ├── language
+   ├── library
+   ├── pandoc
+   ├── projects
+   ├── rmd
+   ├── schema
+   ├── scripts
+   ├── version
+   └── wasm
+```
+
+
+A couple mechanisms for managing how a user can leverage a particular quarto version in a particular shell session and beyond exist. Ultimately, the "trick"
+is to make sure the particular version of interest is in the path or exposed
+in a way that other tools can look it up. We can see from the quarto-r package
+https://github.com/quarto-dev/quarto-r/blob/main/R/quarto.R#L10 that the
+`QUARTO_PATH` is recognized as the path to the quarto binary itself. 
+
+More traditionally, environment management tools make sure the suitable `bin+`
+director(ies) are available at the front of the users path.
+
+For pyenv, this is managed through shims to each python command, where the 
+configured version is first looked up, and the commands are "proxied" through
+to to the underlying commands for the desired version. This provides significant
+flexibility for the underlying shell session, however requires maintaining
+bash/fish/zsh/powershell/other scripts to be native to each shell, or subprocessing
+when that logic is managed within a programming language (as it looks like conda
+does).  
+
+Especially for more complex tools like conda, that must balance executables,
+libraries to link, etc, this elegant complexity is required. 
+
+`go` provides elegant subprocessing capabilities, so this would not be out-of-question,
+however ideally we can minimize the amount of code to maintain with this tool.
+
+The simpler design used by some other tools such as homebrew, 
+executables are exposed by linking versioned installations into a `bin` directory 
+that the user adds to their path. Many tools suggest some incantation to be added
+to their users configuration file (.zshrc, .bashrc, config.fish, etc).
+
+For example for the fish shell, homebrew instructs
+```
+eval (/opt/homebrew/bin/brew shellenv)
+```
+
+which evaluates to:
+
+```
+brew shellenv
+set -gx HOMEBREW_PREFIX "/opt/homebrew";
+set -gx HOMEBREW_CELLAR "/opt/homebrew/Cellar";
+set -gx HOMEBREW_REPOSITORY "/opt/homebrew";
+set -q PATH; or set PATH ''; set -gx PATH "/opt/homebrew/bin" "/opt/homebrew/sbin" $PATH;
+set -q MANPATH; or set MANPATH ''; set -gx MANPATH "/opt/homebrew/share/man" $MANPATH;
+set -q INFOPATH; or set INFOPATH ''; set -gx INFOPATH "/opt/homebrew/share/info" $INFOPATH;
+```
+
+Additional logic can be seen across other shells at:
+https://github.com/Homebrew/brew/blob/master/Library/Homebrew/cmd/shellenv.sh
+
+For other tools that interact with the terminal, such as [starship]()
+a similar pattern is taken with a little more indirection.
+
+```
+starship init fish | source
+```
+
+which returns:
+
+```
+source (/opt/homebrew/bin/starship init fish --print-full-init | psub)
+```
+
+`psub` provides:
+
+> Some shells (e.g., ksh, bash) feature a syntax that is a mix between command substitution and piping, called
+process substitution. It is used to send the output of a command into the calling command, much like command
+substitution, but with the difference that the output is not sent through commandline arguments but through a
+named pipe, with the filename of the named pipe sent as an argument to the calling program. psub combined with
+a regular command substitution provides the same functionality.
+
+
+
+
