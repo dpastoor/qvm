@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/adrg/xdg v0.4.0
 	github.com/google/go-github/v44 v44.1.0
+	github.com/mholt/archiver/v4 v4.0.0-alpha.6.0.20220421032531-8a97d87612e9
 	github.com/muesli/mango-cobra v1.1.0
 	github.com/muesli/roff v0.1.0
 	github.com/sirupsen/logrus v1.8.1
@@ -26,7 +27,6 @@ require (
 	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
-	github.com/mholt/archiver/v4 v4.0.0-alpha.6.0.20220421032531-8a97d87612e9 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/muesli/mango v0.1.0 // indirect
 	github.com/muesli/mango-pflag v0.1.0 // indirect
