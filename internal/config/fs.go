@@ -14,8 +14,8 @@ func GetRootConfigPath() string {
 	return filepath.Join(xdg.ConfigHome, "qvm")
 }
 
-func GetActiveQuartoPath() string {
-	return filepath.Join(xdg.DataHome, "qvm", "active", "bin", "quarto")
+func GetPathToActiveBinDir() string {
+	return filepath.Join(xdg.DataHome, "qvm", "active", "bin")
 }
 
 func GetVersionsPath() string {

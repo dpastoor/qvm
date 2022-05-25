@@ -17,7 +17,7 @@ type pathOpts struct {
 }
 
 func newPath(pathOpts pathOpts) error {
-	fmt.Println(config.GetActiveQuartoPath())
+	fmt.Println(config.GetPathToActiveBinDir())
 	return nil
 }
 
