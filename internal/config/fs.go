@@ -18,7 +18,7 @@ func GetPathToActiveBinDir() string {
 	return filepath.Join(xdg.DataHome, "qvm", "active", "bin")
 }
 
-func GetVersionsPath() string {
+func GetPathToVersionsDir() string {
 	return filepath.Join(xdg.ConfigHome, "qvm", "versions")
 }
 

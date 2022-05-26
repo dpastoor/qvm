@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/dpastoor/qvm/internal/config"
 	"github.com/dpastoor/qvm/internal/gh"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type lsCmd struct {
@@ -15,20 +17,42 @@ type lsCmd struct {
 }
 
 type lsOpts struct {
+	remote bool
 }
 
 func newLs(lsOpts lsOpts) error {
-	client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-	releases, err := gh.GetReleases(client, false)
-	for _, r := range releases {
-		createdAt := r.GetCreatedAt()
-		fmt.Printf("%s - %s\n", r.GetName(), createdAt.Format("2006-01-02"))
+	if lsOpts.remote {
+		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
+		releases, err := gh.GetReleases(client, false)
+		if err != nil {
+			return err
+		}
+		fmt.Println("version  | release date | description")
+		for _, r := range releases {
+			createdAt := r.GetCreatedAt()
+			fmt.Printf("%s | %s | %s\n", r.GetTagName(), createdAt.Format("2006-01-02"), r.GetName())
+		}
+	} else {
+		entries, err := os.ReadDir(config.GetPathToVersionsDir())
+		if err != nil {
+			return err
+		}
+		// TODO: replace with actual table
+		fmt.Println("version  | Install time")
+		fmt.Println("-----------------------")
+		for _, e := range entries {
+			if e.IsDir() {
+				dinfo, _ := e.Info()
+				fmt.Printf("%s | %s\n", e.Name(), dinfo.ModTime().Format("2006-01-02"))
+			}
+		}
 	}
-	return err
+
+	return nil
 }
 
 func setLsOpts(lsOpts *lsOpts) {
-
+	lsOpts.remote = viper.GetBool("remote")
 }
 
 func (opts *lsOpts) Validate() error {
@@ -57,6 +81,8 @@ func newLsCmd() *lsCmd {
 			return nil
 		},
 	}
+	cmd.Flags().Bool("remote", false, "list remote versions")
+	viper.BindPFlag("remote", cmd.Flags().Lookup("remote"))
 	root.cmd = cmd
 	return root
 }

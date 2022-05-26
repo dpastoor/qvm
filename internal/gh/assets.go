@@ -53,6 +53,12 @@ func (o osAssetSuffix) String() string {
 // file and returns the path to the written file.
 // targetOs should be "windows", "darwin", "linux"
 func DownloadReleaseAsset(client *github.Client, tag string, targetOs string) (string, error) {
+	switch targetOs {
+	case "windows", "darwin", "linux":
+		break
+	default:
+		return "", fmt.Errorf("invalid target os: %s, must be one of linux,darwin,windows", targetOs)
+	}
 	release, err := GetRelease(client, tag)
 	if err != nil {
 		return "", err
