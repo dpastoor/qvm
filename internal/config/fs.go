@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"path/filepath"
 
 	"github.com/adrg/xdg"
@@ -20,6 +21,22 @@ func GetPathToActiveBinDir() string {
 
 func GetPathToVersionsDir() string {
 	return filepath.Join(xdg.ConfigHome, "qvm", "versions")
+}
+
+// GetInstalledVersions returns a map of installed versions where they key is the version
+// and the value is the path to the quarto executable
+func GetInstalledVersions() (map[string]string, error) {
+	iv := make(map[string]string)
+	entries, err := os.ReadDir(GetPathToVersionsDir())
+	if err != nil {
+		return iv, err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			iv[entry.Name()] = filepath.Join(GetPathToVersionsDir(), entry.Name(), "bin", "quarto")
+		}
+	}
+	return iv, nil
 }
 
 func Read() (Config, string, error) {

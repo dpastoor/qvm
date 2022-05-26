@@ -58,6 +58,7 @@ func newRootCmd(version string) *rootCmd {
 	cmd.AddCommand(newPathRootCmd().cmd)
 	cmd.AddCommand(newPathCmd().cmd)
 	cmd.AddCommand(newInstallCmd().cmd)
+	cmd.AddCommand(newUseCmd().cmd)
 	root.cmd = cmd
 	return root
 }
