@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/dpastoor/qvm/internal/config"
 	"github.com/dpastoor/qvm/internal/gh"
@@ -40,6 +41,16 @@ func newLs(lsOpts lsOpts) error {
 		// TODO: replace with actual table
 		fmt.Println("version  | Install time")
 		fmt.Println("-----------------------")
+
+		// modification time
+		// sort.Slice(entries, func(i, j int) bool {
+		// 	x, _ := entries[i].Info()
+		// 	y, _ := entries[j].Info()
+		// 	return x.ModTime().After(y.ModTime())
+		// })
+		sort.Slice(entries, func(i, j int) bool {
+			return entries[i].Name() > entries[j].Name()
+		})
 		for _, e := range entries {
 			if e.IsDir() {
 				dinfo, _ := e.Info()
