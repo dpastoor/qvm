@@ -27,12 +27,12 @@ func newUse(useOpts useOpts, version string) error {
 	if !ok {
 		return fmt.Errorf("version %s not found", version)
 	}
-	err = os.MkdirAll(config.GetPathToActiveBinDir(), 0755)
+	err = os.MkdirAll(config.GetPathToActiveBinDir(), 0700)
 	if err != nil {
 		return err
 	}
 	err = os.Remove(filepath.Join(config.GetPathToActiveBinDir(), "quarto"))
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
 	return os.Symlink(
