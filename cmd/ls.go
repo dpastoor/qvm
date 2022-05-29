@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"sort"
@@ -35,6 +36,10 @@ func newLs(lsOpts lsOpts) error {
 		}
 	} else {
 		entries, err := os.ReadDir(config.GetPathToVersionsDir())
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Println("No installed quarto versions found")
+			return nil
+		}
 		if err != nil {
 			return err
 		}
