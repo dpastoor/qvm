@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
+	"os"
 	"runtime"
 	"sync"
 
@@ -21,7 +23,7 @@ type installOpts struct {
 
 func newInstall(installOpts installOpts, release string) error {
 	iv, err := config.GetInstalledVersions()
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
 	_, ok := iv[release]
