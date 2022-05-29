@@ -16,6 +16,8 @@ func newPathCmd() *pathCmd {
 		Short: "get the path to the active quarto executable",
 	}
 	cmd.AddCommand(newPathRootCmd().cmd)
+	cmd.AddCommand(newPathActiveCmd().cmd)
+	cmd.AddCommand(newPathVersionsCmd().cmd)
 	root.cmd = cmd
 	return root
 }
