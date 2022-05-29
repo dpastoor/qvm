@@ -21,7 +21,7 @@ func main() {
 	if runtime.GOOS == "darwin" {
 		hd, _ := os.UserHomeDir()
 		os.Setenv("XDG_CONFIG_HOME", filepath.Join(hd, ".config"))
-		os.Setenv("XDG_DATA_HOME", filepath.Join(hd, ".config"))
+		os.Setenv("XDG_DATA_HOME", filepath.Join(hd, ".local", "share"))
 		xdg.Reload()
 	}
 	cmd.Execute(version, os.Args[1:])

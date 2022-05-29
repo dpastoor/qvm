@@ -14,13 +14,16 @@ func GetConfigPath() (string, error) {
 func GetRootConfigPath() string {
 	return filepath.Join(xdg.ConfigHome, "qvm")
 }
+func GetRootDataPath() string {
+	return filepath.Join(xdg.DataHome, "qvm")
+}
 
 func GetPathToActiveBinDir() string {
-	return filepath.Join(xdg.DataHome, "qvm", "active", "bin")
+	return filepath.Join(xdg.ConfigHome, "qvm", "bin")
 }
 
 func GetPathToVersionsDir() string {
-	return filepath.Join(xdg.ConfigHome, "qvm", "versions")
+	return filepath.Join(xdg.DataHome, "qvm", "versions")
 }
 
 // GetInstalledVersions returns a map of installed versions where they key is the version
