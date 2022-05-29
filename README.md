@@ -43,10 +43,18 @@ qvm ls --remote --since 2022-05-01 # releases since 2022-05-01, follows YYYY-MM-
 qvm ls --remote -n 10 # latest 10 releases
 ```
 
-### installing a version
+### installing versions
+
+`install` will install quarto versions given the release name(s). It will
+attempt to install all versions in parallel, and will coalesce and return
+any failures at the end. 
 
 ```shell
-qvm install $QUARTO_VERSION
+qvm install $QUARTO_VERSION $ANOTHER_QUARTO_VERSION
+```
+
+```shell
+qvm install v0.9.466 v0.9.432
 ```
 
 can also allow interactive selection and filtering by just
@@ -75,17 +83,20 @@ qvm use $QUARTO_VERSION --local
 
 ### programmatic support utilities
 
-TODO: explain - goal is to allow qvm to be used in other shell scripts/etc
-more easily
-
-```
-qvm path
+```shell
+qvm path roots # various roots
+qvm path versions # path to versions
+qvm path active # path to active bin dir
 ```
 
 
 ## internals
 
-If you want to poke around yourself, the config file location follows the XDG base directory spec. 
+If you want to poke around yourself, the config file location follows the XDG base directory spec, with the caveat that on OSX, we normalize to follow the linux XDG
+convention of using `.local/share` and `.config` instead of `Application Library`
+as quarto has some trouble with paths with strings. Though this will be fixed in 
+subsequent quarto versions, we don't want to make qvm incompatible with all 
+quarto versions on OSX prior to that date.
 
 
 <details open>
