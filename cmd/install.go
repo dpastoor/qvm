@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"runtime"
+	"sync"
 
 	"github.com/dpastoor/qvm/internal/pipeline"
 	log "github.com/sirupsen/logrus"
@@ -52,8 +53,28 @@ func newInstallCmd() *installCmd {
 		RunE: func(_ *cobra.Command, args []string) error {
 			//TODO: Add your logic to gather config to pass code here
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("install-opts")
-			if err := newInstall(root.opts, args[0]); err != nil {
-				return err
+			wg := sync.WaitGroup{}
+			errChan := make(chan error, len(args))
+			for _, arg := range args {
+				wg.Add(1)
+				go func(errc <-chan error, release string) {
+					err := newInstall(root.opts, release)
+					errChan <- err
+					wg.Done()
+				}(errChan, arg)
+			}
+			wg.Wait()
+			// make sure to close so the range will terminate
+			close(errChan)
+			anyErrors := false
+			for err := range errChan {
+				if err != nil {
+					anyErrors = true
+					log.Error(err)
+				}
+			}
+			if anyErrors {
+				log.Fatal("install failed for one or more releases")
 			}
 			return nil
 		},
