@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -24,6 +24,9 @@ func Execute(version string, args []string) {
 func (cmd *rootCmd) Execute(args []string) {
 	cmd.cmd.SetArgs(args)
 	if err := cmd.cmd.Execute(); err != nil {
+		// if get to this point and don't fatally log in the subcommand,
+		// the Usage help will be printed before the error,
+		// which may or may not be the desired behavior
 		log.Fatalf("failed with error: %s", err)
 	}
 }
@@ -55,7 +58,6 @@ func newRootCmd(version string) *rootCmd {
 	cmd.AddCommand(newDebugCmd(root.cfg))
 	cmd.AddCommand(newManCmd().cmd)
 	cmd.AddCommand(newLsCmd().cmd)
-	cmd.AddCommand(newPathRootCmd().cmd)
 	cmd.AddCommand(newPathCmd().cmd)
 	cmd.AddCommand(newInstallCmd().cmd)
 	cmd.AddCommand(newUseCmd().cmd)

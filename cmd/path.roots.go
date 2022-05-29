@@ -18,6 +18,7 @@ type pathRootOpts struct {
 
 func newPathRoot(pathRootOpts pathRootOpts) error {
 	fmt.Println(config.GetRootConfigPath())
+	fmt.Println(config.GetRootDataPath())
 	return nil
 }
 
@@ -33,8 +34,8 @@ func newPathRootCmd() *pathRootCmd {
 	root := &pathRootCmd{opts: pathRootOpts{}}
 
 	cmd := &cobra.Command{
-		Use:   "root",
-		Short: "get the root qvm path",
+		Use:   "roots",
+		Short: "get the qvm root paths",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			setPathRootOpts(&root.opts)
 			if err := root.opts.Validate(); err != nil {
@@ -44,7 +45,7 @@ func newPathRootCmd() *pathRootCmd {
 		},
 		RunE: func(_ *cobra.Command, args []string) error {
 			//TODO: Add your logic to gather config to pass code here
-			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("pathRoot-opts")
+			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("path-roots-opts")
 			if err := newPathRoot(root.opts); err != nil {
 				return err
 			}
