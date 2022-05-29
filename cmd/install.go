@@ -5,6 +5,7 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/dpastoor/qvm/internal/config"
 	"github.com/dpastoor/qvm/internal/pipeline"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -19,6 +20,15 @@ type installOpts struct {
 }
 
 func newInstall(installOpts installOpts, release string) error {
+	iv, err := config.GetInstalledVersions()
+	if err != nil {
+		return err
+	}
+	_, ok := iv[release]
+	if ok {
+		log.Infof("quarto version %s is already installed\n", release)
+		return nil
+	}
 	log.Info("attempting to install quarto version: ", release)
 	res, err := pipeline.DownloadReleaseVersion(release, runtime.GOOS)
 	if err != nil {
