@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -18,8 +19,17 @@ func GetRootDataPath() string {
 	return filepath.Join(xdg.DataHome, "qvm")
 }
 
+// GetPathToActiveBinDir returns the path to the active version's bin directory
+// if that directory does not exist, it will be created with perms 700
 func GetPathToActiveBinDir() string {
-	return filepath.Join(xdg.ConfigHome, "qvm", "bin")
+	path := filepath.Join(xdg.ConfigHome, "qvm", "bin")
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		err := os.MkdirAll(path, 0700)
+		if err != nil {
+			fmt.Println("unable to create active bin dir, there could be issues when attempting to access!")
+		}
+	}
+	return path
 }
 
 func GetPathToVersionsDir() string {
