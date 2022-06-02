@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/dpastoor/qvm/internal/config"
+	"github.com/dpastoor/qvm/internal/gh"
 	"github.com/dpastoor/qvm/internal/pipeline"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,6 +23,14 @@ type installOpts struct {
 }
 
 func newInstall(installOpts installOpts, release string) error {
+	if release == "latest" {
+		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
+		latestRelease, err := gh.GetLatestRelease(client)
+		if err != nil {
+			return err
+		}
+		release = latestRelease.GetTagName()
+	}
 	iv, err := config.GetInstalledVersions()
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
