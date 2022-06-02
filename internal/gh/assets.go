@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dustin/go-humanize"
 	"github.com/google/go-github/v44/github"
 	log "github.com/sirupsen/logrus"
 )
@@ -49,10 +50,30 @@ func (o osAssetSuffix) String() string {
 	}
 }
 
+type WriteCounter struct {
+	Written  int
+	Total    int
+	Label    string
+	nWrites  int
+	progress bool
+}
+
+func (wc *WriteCounter) Write(p []byte) (int, error) {
+	n := len(p)
+	wc.Written += n
+	wc.nWrites++
+	if wc.progress && wc.nWrites%200 == 0 {
+		log.Infof("downloading quarto version %s ... (%s/%s)", wc.Label,
+			humanize.Bytes(uint64(wc.Written)),
+			humanize.Bytes(uint64(wc.Total)))
+	}
+	return n, nil
+}
+
 // DownloadReleaseAsset downloads the release asset for a given platform to a temp
 // file and returns the path to the written file.
 // targetOs should be "windows", "darwin", "linux"
-func DownloadReleaseAsset(client *github.Client, tag string, targetOs string) (string, error) {
+func DownloadReleaseAsset(client *github.Client, tag string, targetOs string, progress bool) (string, error) {
 	switch targetOs {
 	case "windows", "darwin", "linux":
 		break
@@ -83,7 +104,8 @@ func DownloadReleaseAsset(client *github.Client, tag string, targetOs string) (s
 	defer tmpFile.Close()
 	log.Tracef("starting to copy release asset to %s\n", tmpFile.Name())
 	start = time.Now()
-	wb, err := io.Copy(tmpFile, rc)
+	counter := &WriteCounter{Total: asset.GetSize(), Label: tag, progress: progress}
+	wb, err := io.Copy(tmpFile, io.TeeReader(rc, counter))
 	log.Tracef("done copying release asset in %s\n", time.Since(start))
 	if err != nil {
 		return tmpFile.Name(), err

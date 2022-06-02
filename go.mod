@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/adrg/xdg v0.4.0
+	github.com/dustin/go-humanize v1.0.0
 	github.com/google/go-github/v44 v44.1.0
 	github.com/mholt/archiver/v4 v4.0.0-alpha.6.0.20220421032531-8a97d87612e9
 	github.com/muesli/mango-cobra v1.1.0

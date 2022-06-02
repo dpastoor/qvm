@@ -11,9 +11,9 @@ import (
 
 // DownloadReleaseVersion downloads the appropriate tarball for a given platform
 // platform should be windows | linux | darwin
-func DownloadReleaseVersion(release string, platform string) (string, error) {
+func DownloadReleaseVersion(release string, platform string, progress bool) (string, error) {
 	client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-	dlPath, err := gh.DownloadReleaseAsset(client, release, platform)
+	dlPath, err := gh.DownloadReleaseAsset(client, release, platform, progress)
 	if err != nil {
 		return "", err
 	}

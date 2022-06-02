@@ -12,6 +12,7 @@ import (
 	"github.com/dpastoor/qvm/internal/pipeline"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 type installCmd struct {
@@ -20,6 +21,7 @@ type installCmd struct {
 }
 
 type installOpts struct {
+	progress bool
 }
 
 func newInstall(installOpts installOpts, release string) error {
@@ -41,7 +43,7 @@ func newInstall(installOpts installOpts, release string) error {
 		return nil
 	}
 	log.Info("attempting to install quarto version: ", release)
-	res, err := pipeline.DownloadReleaseVersion(release, runtime.GOOS)
+	res, err := pipeline.DownloadReleaseVersion(release, runtime.GOOS, installOpts.progress)
 	if err != nil {
 		return err
 	}
@@ -51,7 +53,7 @@ func newInstall(installOpts installOpts, release string) error {
 }
 
 func setInstallOpts(installOpts *installOpts) {
-
+	installOpts.progress = !viper.GetBool("no-progress")
 }
 
 func (opts *installOpts) Validate() error {
@@ -100,6 +102,8 @@ func newInstallCmd() *installCmd {
 			return nil
 		},
 	}
+	cmd.Flags().BoolP("no-progress", "", false, "do not print download progress")
+	viper.BindPFlag("no-progress", cmd.Flags().Lookup("no-progress"))
 	root.cmd = cmd
 	return root
 }
