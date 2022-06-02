@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/dpastoor/qvm/internal/config"
+	"github.com/dpastoor/qvm/internal/gh"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -19,6 +20,14 @@ type useOpts struct {
 }
 
 func newUse(useOpts useOpts, version string) error {
+	if version == "latest" {
+		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
+		latestRelease, err := gh.GetLatestRelease(client)
+		if err != nil {
+			return err
+		}
+		version = latestRelease.GetTagName()
+	}
 	iv, err := config.GetInstalledVersions()
 	if err != nil {
 		return err
@@ -35,10 +44,15 @@ func newUse(useOpts useOpts, version string) error {
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
-	return os.Symlink(
+	err = os.Symlink(
 		quartopath,
 		filepath.Join(config.GetPathToActiveBinDir(), "quarto"),
 	)
+	if err != nil {
+		return err
+	}
+	log.Infof("now using quarto version: %s\n", version)
+	return nil
 }
 
 func setUseOpts(useOpts *useOpts) {
