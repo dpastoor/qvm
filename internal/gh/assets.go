@@ -62,7 +62,7 @@ func (wc *WriteCounter) Write(p []byte) (int, error) {
 	n := len(p)
 	wc.Written += n
 	wc.nWrites++
-	if wc.progress && wc.nWrites%200 == 0 {
+	if wc.progress && wc.nWrites%300 == 0 {
 		log.Infof("downloading quarto version %s ... (%s/%s)", wc.Label,
 			humanize.Bytes(uint64(wc.Written)),
 			humanize.Bytes(uint64(wc.Total)))
