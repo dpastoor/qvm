@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/dpastoor/qvm/internal/config"
 	"github.com/dpastoor/qvm/internal/gh"
 	"github.com/dpastoor/qvm/internal/pipeline"
@@ -25,6 +26,35 @@ type installOpts struct {
 }
 
 func newInstall(installOpts installOpts, release string) error {
+	iv, err := config.GetInstalledVersions()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	if release == "" {
+		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
+		releases, err := gh.GetReleases(client, false)
+		if err != nil {
+			return err
+		}
+		versions := []string{}
+		for _, r := range releases {
+			versions = append(versions, r.GetTagName())
+		}
+		err = survey.AskOne(&survey.Select{
+			Message: "Which version do you want to install?",
+			Options: versions,
+			Description: func(value string, index int) string {
+				_, ok := iv[value]
+				if ok {
+					return "**installed**"
+				}
+				return ""
+			},
+		}, &release, survey.WithPageSize(10))
+		if err != nil {
+			return err
+		}
+	}
 	if release == "latest" {
 		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
 		latestRelease, err := gh.GetLatestRelease(client)
@@ -32,10 +62,6 @@ func newInstall(installOpts installOpts, release string) error {
 			return err
 		}
 		release = latestRelease.GetTagName()
-	}
-	iv, err := config.GetInstalledVersions()
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
 	}
 	_, ok := iv[release]
 	if ok {
@@ -77,16 +103,22 @@ func newInstallCmd() *installCmd {
 			//TODO: Add your logic to gather config to pass code here
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("install-opts")
 			wg := sync.WaitGroup{}
+			// this will allow the autoprompt to kick in
+			if len(args) == 0 {
+				args = []string{""}
+			}
 			errChan := make(chan error, len(args))
 			for _, arg := range args {
 				wg.Add(1)
 				go func(errc <-chan error, release string) {
+					defer wg.Done()
 					err := newInstall(root.opts, release)
 					errChan <- err
-					wg.Done()
 				}(errChan, arg)
 			}
+			log.Trace("install waiting")
 			wg.Wait()
+			log.Trace("install done waiting")
 			// make sure to close so the range will terminate
 			close(errChan)
 			anyErrors := false
