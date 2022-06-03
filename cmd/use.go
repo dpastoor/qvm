@@ -1,14 +1,17 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/dpastoor/qvm/internal/config"
-	"github.com/dpastoor/qvm/internal/gh"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/maps"
 )
 
 type useCmd struct {
@@ -20,17 +23,27 @@ type useOpts struct {
 }
 
 func newUse(useOpts useOpts, version string) error {
-	if version == "latest" {
-		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-		latestRelease, err := gh.GetLatestRelease(client)
+	iv, err := config.GetInstalledVersions()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	versions := maps.Keys(iv)
+	sort.Sort(sort.Reverse(sort.StringSlice(versions)))
+	if len(iv) == 0 {
+		return errors.New("no installed versions found, please install a version first")
+	}
+	if version == "" {
+
+		err := survey.AskOne(&survey.Select{
+			Message: "Which version do you want to install?",
+			Options: versions,
+		}, &version)
 		if err != nil {
 			return err
 		}
-		version = latestRelease.GetTagName()
 	}
-	iv, err := config.GetInstalledVersions()
-	if err != nil {
-		return err
+	if version == "latest" {
+		version = versions[0]
 	}
 	quartopath, ok := iv[version]
 	if !ok {
