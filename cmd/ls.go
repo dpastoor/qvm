@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/dpastoor/qvm/internal/config"
@@ -35,6 +36,10 @@ func newLs(lsOpts lsOpts) error {
 			fmt.Printf("%s | %s | %s\n", r.GetTagName(), createdAt.Format("2006-01-02"), r.GetName())
 		}
 	} else {
+		activePath, err := filepath.EvalSymlinks(filepath.Join(config.GetPathToActiveBinDir(), "quarto"))
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
 		entries, err := os.ReadDir(config.GetPathToVersionsDir())
 		if errors.Is(err, os.ErrNotExist) {
 			fmt.Println("No installed quarto versions found")
@@ -44,8 +49,8 @@ func newLs(lsOpts lsOpts) error {
 			return err
 		}
 		// TODO: replace with actual table
-		fmt.Println("version  | Install time")
-		fmt.Println("-----------------------")
+		fmt.Println("version           | install time")
+		fmt.Println("--------------------------------")
 
 		// modification time
 		// sort.Slice(entries, func(i, j int) bool {
@@ -59,7 +64,13 @@ func newLs(lsOpts lsOpts) error {
 		for _, e := range entries {
 			if e.IsDir() {
 				dinfo, _ := e.Info()
-				fmt.Printf("%s | %s\n", e.Name(), dinfo.ModTime().Format("2006-01-02"))
+				name := e.Name()
+				if filepath.Base(filepath.Dir(filepath.Dir(activePath))) == e.Name() {
+					name += " (active)"
+				} else {
+					name += "         "
+				}
+				fmt.Printf("%s | %s\n", name, dinfo.ModTime().Format("2006-01-02"))
 			}
 		}
 	}
