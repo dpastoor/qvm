@@ -3,6 +3,7 @@ module github.com/dpastoor/qvm
 go 1.18
 
 require (
+	github.com/AlecAivazis/survey/v2 v2.3.5-0.20220530090844-e47352f91434
 	github.com/adrg/xdg v0.4.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/google/go-github/v44 v44.1.0
@@ -12,12 +13,12 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/viper v1.11.0
+	golang.org/x/exp v0.0.0-20220602145555-4a0574d9293f
 	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	gopkg.in/yaml.v3 v3.0.0
 )
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.5-0.20220530090844-e47352f91434 // indirect
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -48,7 +49,6 @@ require (
 	github.com/therootcompany/xz v1.0.1 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898 // indirect
-	golang.org/x/exp v0.0.0-20220602145555-4a0574d9293f // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
