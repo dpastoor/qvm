@@ -25,7 +25,7 @@ func newInit(initOpts initOpts) error {
 		fmt.Println("please add the active bin directory to your path")
 		fmt.Println(`you can dynamically query the active bin directory by running: "qvm path active" 
 		if you would like to script this, you can add the following to your ~/.bashrc or ~/.zshrc:
-		export PATH="$(qvm path active):$PATH")
+		export PATH="$(qvm path add)")
 		`)
 
 	} else {
