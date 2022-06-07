@@ -18,6 +18,7 @@ func newPathCmd() *pathCmd {
 	cmd.AddCommand(newPathRootCmd().cmd)
 	cmd.AddCommand(newPathActiveCmd().cmd)
 	cmd.AddCommand(newPathVersionsCmd().cmd)
+	cmd.AddCommand(newPathAddCmd().cmd)
 	root.cmd = cmd
 	return root
 }
