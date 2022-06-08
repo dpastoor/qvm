@@ -2,6 +2,8 @@
 
 manage and switch between versions of Quarto.
 
+[![asciicast](https://asciinema.org/a/nB2VzKCeuW0iyBANuRGCVPywp.svg)](https://asciinema.org/a/nB2VzKCeuW0iyBANuRGCVPywp)
+
 ## how it works
 
 taking inspiration from pyenv/conda/homebrew/nvm/choco/other env managers, qvm supports
