@@ -27,6 +27,59 @@ workflow should be supported.
 
 ## setup
 
+Run `qvm init` and follow the instructions!
+
+The instructions approximately will recommend: 
+
+add the following to your `~/.profile`:
+
+```
+export PATH="$(qvm path add)"
+```
+
+This will make sure the appropriate directories are prepended to your path to detect
+the managed quarto version.
+
+NOTE: adding this to your profile instead of `~/.bashrc` or `~/.zshrc` will
+enable both the shell sessions *and* R sessions launched via Rstudio Workbench
+to pick up the change. If you only add to the `rc` file, it will only be present
+in the shell.
+
+An example complete `~/.profile` file might look like:
+
+```
+# ~/.profile: executed by the command interpreter for login shells.
+# This file is not read by bash(1), if ~/.bash_profile or ~/.bash_login
+# exists.
+# see /usr/share/doc/bash/examples/startup-files for examples.
+# the files are located in the bash-doc package.
+
+# the default umask is set in /etc/profile; for setting the umask
+# for ssh logins, install and configure the libpam-umask package.
+#umask 022
+
+# if running bash
+if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bashrc" ]; then
+        . "$HOME/.bashrc"
+    fi
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ] ; then
+    PATH="$HOME/bin:$PATH"
+fi
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+export PATH="$(qvm path add)"
+
+```
+
 ### understanding what is available
 
 which versions of quarto do you have installed?
@@ -49,6 +102,16 @@ qvm ls --remote -n 10 # latest 10 releases
 attempt to install all versions in parallel, and will coalesce and return
 any failures at the end. 
 
+You can also allow interactive selection and filtering by just
+running `qvm install`
+
+```
+qvm install
+```
+
+
+
+
 ```shell
 qvm install $QUARTO_VERSION $ANOTHER_QUARTO_VERSION
 ```
@@ -57,13 +120,10 @@ qvm install $QUARTO_VERSION $ANOTHER_QUARTO_VERSION
 qvm install v0.9.466 v0.9.432
 ```
 
-can also allow interactive selection and filtering by just
-running `qvm install`
-
-TODO: example of what this looks like:
+the `latest` keyword will dynamically install the latest version
 
 ```
-qvm install
+qvm install latest
 ```
 
 ### updating which global version to use

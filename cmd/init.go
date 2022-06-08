@@ -23,9 +23,9 @@ func newInit(initOpts initOpts) error {
 	activeIndex := strings.Index(os.Getenv("PATH"), activeDir)
 	if activeIndex == -1 {
 		fmt.Println("please add the active bin directory to your path")
-		fmt.Println(`you can dynamically query the active bin directory by running: "qvm path active" 
-		if you would like to script this, you can add the following to your ~/.bashrc or ~/.zshrc:
-		export PATH="$(qvm path add)")
+		fmt.Println(`you can dynamically query the active quarto bin directory by running: "qvm path active" 
+		if you would like to script addin this path, you can add the following to your ~/.profile:
+		export PATH="$(qvm path add)"
 		`)
 
 	} else {
