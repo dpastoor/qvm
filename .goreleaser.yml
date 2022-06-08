@@ -10,8 +10,7 @@ release:
     ### Mac
     first time:
     ```
-    brew tap dpastoor/tap
-    brew install qvm
+    brew install dpastoor/tap/qvm
     ```
     upgrade:
     ```
@@ -19,7 +18,7 @@ release:
     ```
     ### Linux
     ```
-    sudo wget https://github.com/dpastoor/qvm/releases/download/{{ .Tag }}/qvm_Linux_amd64.tar.gz -O /tmp/qvm.tar.gz
+    sudo wget https://github.com/dpastoor/qvm/releases/download/{{ .Tag }}/qvm_Linux_x86_64.tar.gz -O /tmp/qvm.tar.gz
     sudo tar xzf /tmp/qvm.tar.gz qvm
     sudo mv qvm /usr/local/bin/qvm
     sudo chmod +x /usr/local/bin/qvm
