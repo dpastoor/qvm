@@ -67,6 +67,9 @@ func (wc *WriteCounter) Write(p []byte) (int, error) {
 			humanize.Bytes(uint64(wc.Written)),
 			humanize.Bytes(uint64(wc.Total)))
 	}
+	if wc.Written == wc.Total {
+		log.Infof("completed downloading quarto version %s", wc.Label)
+	}
 	return n, nil
 }
 
