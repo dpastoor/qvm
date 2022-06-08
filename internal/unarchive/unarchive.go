@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mholt/archiver/v4"
 )
@@ -24,8 +25,14 @@ func Unarchive(input io.Reader, dir string) error {
 	// (leave this nil to walk ALL files from the archive)
 
 	handler := func(ctx context.Context, f archiver.File) error {
+		fileName := f.NameInArchive
+		// currently on osx we get a top dir of ./bin and ./share
+		// when in reality the
+		if strings.HasPrefix(fileName, "quarto-") {
+			fileName = strings.Join(strings.Split(fileName, "/")[1:], "/")
+		}
 		// do something with the file
-		newPath := filepath.Join(dir, f.NameInArchive)
+		newPath := filepath.Join(dir, fileName)
 		if f.IsDir() {
 			return os.MkdirAll(newPath, f.Mode())
 		}
