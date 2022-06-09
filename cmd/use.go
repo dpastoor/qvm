@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -53,13 +54,17 @@ func newUse(useOpts useOpts, version string) error {
 	if err != nil {
 		return err
 	}
-	err = os.Remove(filepath.Join(config.GetPathToActiveBinDir(), "quarto"))
+	quartoExe := "quarto"
+	if runtime.GOOS == "windows" {
+		quartoExe = "quarto.exe"
+	}
+	err = os.Remove(filepath.Join(config.GetPathToActiveBinDir(), quartoExe))
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
 	err = os.Symlink(
 		quartopath,
-		filepath.Join(config.GetPathToActiveBinDir(), "quarto"),
+		filepath.Join(config.GetPathToActiveBinDir(), quartoExe),
 	)
 	if err != nil {
 		return err

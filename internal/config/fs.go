@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/adrg/xdg"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetConfigPath() (string, error) {
@@ -46,7 +48,16 @@ func GetInstalledVersions() (map[string]string, error) {
 	}
 	for _, entry := range entries {
 		if entry.IsDir() {
-			iv[entry.Name()] = filepath.Join(GetPathToVersionsDir(), entry.Name(), "bin", "quarto")
+			quartoExe := "quarto"
+			if runtime.GOOS == "windows" {
+				quartoExe = "quarto.exe"
+			}
+			quartoPath := filepath.Join(GetPathToVersionsDir(), entry.Name(), "bin", quartoExe)
+			if _, err := os.Stat(quartoPath); err == nil {
+				iv[entry.Name()] = quartoPath
+			} else {
+				log.Warn("could not find expected quarto executable for version: ", entry.Name())
+			}
 		}
 	}
 	return iv, nil
