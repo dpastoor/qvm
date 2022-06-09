@@ -56,7 +56,7 @@ func newUse(useOpts useOpts, version string) error {
 	}
 	quartoExe := "quarto"
 	if runtime.GOOS == "windows" {
-		quartoExe = "quarto.exe"
+		quartoExe = "quarto.cmd"
 	}
 	err = os.Remove(filepath.Join(config.GetPathToActiveBinDir(), quartoExe))
 	if err != nil && !os.IsNotExist(err) {

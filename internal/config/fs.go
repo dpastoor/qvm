@@ -50,7 +50,7 @@ func GetInstalledVersions() (map[string]string, error) {
 		if entry.IsDir() {
 			quartoExe := "quarto"
 			if runtime.GOOS == "windows" {
-				quartoExe = "quarto.exe"
+				quartoExe = "quarto.cmd"
 			}
 			quartoPath := filepath.Join(GetPathToVersionsDir(), entry.Name(), "bin", quartoExe)
 			if _, err := os.Stat(quartoPath); err == nil {
