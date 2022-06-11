@@ -43,9 +43,8 @@ func Unarchive(input io.Reader, dir string) error {
 			fileName = trimTopDir(fileName)
 		}
 		newPath := filepath.Join(dir, fileName)
-		fdir := filepath.Dir(newPath)
 		if f.IsDir() {
-			dirMap[fdir] = true
+			dirMap[newPath] = true
 			return os.MkdirAll(newPath, f.Mode())
 		} else {
 			// check if we've seen the dir before, if not, we'll attemp to create
@@ -56,12 +55,13 @@ func Unarchive(input io.Reader, dir string) error {
 			// be the reason, and assume its probably the powershell compress-archive
 			// encantation, so rather than trying to go down that rabbit hole too far,
 			// some additional checking here
+			fdir := filepath.Dir(newPath)
 			_, seenDir := dirMap[fdir]
 			if !seenDir {
 				dirMap[fdir] = true
 				// linux default for new directories is 777 and let the umask handle
 				// if should have other controls
-				err := os.MkdirAll(newPath, 0777)
+				err := os.MkdirAll(fdir, 0777)
 				if err != nil {
 					return err
 				}
