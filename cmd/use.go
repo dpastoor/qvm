@@ -45,9 +45,9 @@ func newUse(useOpts useOpts, version string) error {
 			Options: versions,
 			Description: func(value string, index int) string {
 				if value == activeVersion {
-					return fmt.Sprintf("%s (active)", value)
+					return "**active**"
 				}
-				return value
+				return ""
 			},
 		}, &version, survey.WithPageSize(10))
 		if err != nil {
