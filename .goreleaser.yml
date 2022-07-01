@@ -80,8 +80,8 @@ brews:
     tap:
       owner: dpastoor 
       name: homebrew-tap 
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     folder: Formula
-    token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     goarm: "7"
     test: |
       system "#{bin}/qvm -v"
