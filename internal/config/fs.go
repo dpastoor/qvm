@@ -49,7 +49,7 @@ func GetPathToVersionsDir() string {
 func GetActiveVersion() (string, error) {
 	path, err := filepath.EvalSymlinks(GetPathToActiveQuartoExe())
 	if err != nil {
-		if os.IsNotExist(err) {
+		if errors.Is(err, os.ErrNotExist) {
 			return "", errors.New("no active quarto version detected")
 		}
 		return "", err
