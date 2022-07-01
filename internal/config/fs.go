@@ -1,6 +1,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -34,8 +35,34 @@ func GetPathToActiveBinDir() string {
 	return path
 }
 
+func GetPathToActiveQuartoExe() string {
+	quartoExe := "quarto"
+	if runtime.GOOS == "windows" {
+		quartoExe = "quarto.cmd"
+	}
+	return filepath.Join(GetPathToActiveBinDir(), quartoExe)
+}
 func GetPathToVersionsDir() string {
 	return filepath.Join(xdg.DataHome, "qvm", "versions")
+}
+
+func GetActiveVersion() (string, error) {
+	path, err := filepath.EvalSymlinks(GetPathToActiveQuartoExe())
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", errors.New("no active quarto version detected")
+		}
+		return "", err
+	}
+	// the path should resolve to .../versions/<version>/bin/quarto
+	// could also consider filepath.SplitList
+	version := filepath.Base(filepath.Dir(filepath.Dir(path)))
+	if version == "." {
+		return "", errors.New(`
+		something went wrong with the active version detection, 
+		please contact the developers`)
+	}
+	return version, nil
 }
 
 // GetInstalledVersions returns a map of installed versions where they key is the version
