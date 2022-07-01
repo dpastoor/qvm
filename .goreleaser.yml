@@ -80,7 +80,6 @@ brews:
     tap:
       owner: dpastoor 
       name: homebrew-tap 
-      token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
     folder: Formula
     goarm: "7"
     test: |
