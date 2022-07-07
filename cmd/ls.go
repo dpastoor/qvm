@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sort"
 
 	"github.com/dpastoor/qvm/internal/config"
@@ -36,10 +35,6 @@ func newLs(lsOpts lsOpts) error {
 			fmt.Printf("%s | %s | %s\n", r.GetTagName(), createdAt.Format("2006-01-02"), r.GetName())
 		}
 	} else {
-		activePath, err := filepath.EvalSymlinks(filepath.Join(config.GetPathToActiveBinDir(), "quarto"))
-		if err != nil && !errors.Is(err, os.ErrNotExist) {
-			return err
-		}
 		entries, err := os.ReadDir(config.GetPathToVersionsDir())
 		if errors.Is(err, os.ErrNotExist) {
 			fmt.Println("No installed quarto versions found")
@@ -61,11 +56,14 @@ func newLs(lsOpts lsOpts) error {
 		sort.Slice(entries, func(i, j int) bool {
 			return entries[i].Name() > entries[j].Name()
 		})
+		// no need to worry about errors since just need to know version
+		// for matching below and won't match if doesn't exist
+		activeVersion, _ := config.GetActiveVersion()
 		for _, e := range entries {
 			if e.IsDir() {
 				dinfo, _ := e.Info()
 				name := e.Name()
-				if filepath.Base(filepath.Dir(filepath.Dir(activePath))) == e.Name() {
+				if activeVersion == e.Name() {
 					name += " (active)"
 				} else {
 					name += "         "

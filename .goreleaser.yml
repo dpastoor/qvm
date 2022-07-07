@@ -24,6 +24,17 @@ release:
     sudo chmod +x /usr/local/bin/qvm
     ```
 
+    ### Linux User
+
+    Assumes `~/bin` is available in your PATH
+
+    ```
+    wget https://github.com/dpastoor/qvm/releases/download/{{ .Tag }}/qvm_Linux_x86_64.tar.gz -O /tmp/qvm.tar.gz
+    tar xzf /tmp/qvm.tar.gz qvm
+    mv qvm ~/bin/qvm
+    chmod +x ~/bin/qvm
+    ```
+
 before:
   hooks:
     - go mod tidy
@@ -40,10 +51,12 @@ builds:
       - linux
     goarch:
     - amd64
-    # - arm64
-    # - arm
-    # goarm:
-    # - "7"
+    - arm64
+    goarm:
+    - "7"
+
+universal_binaries:
+- replace: true
 
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'

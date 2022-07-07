@@ -33,24 +33,32 @@ func newUse(useOpts useOpts, version string) error {
 	if len(iv) == 0 {
 		return errors.New("no installed versions found, please install a version first")
 	}
+	if version == "latest" {
+		version = versions[0]
+	}
 	if version == "" {
-
-		err := survey.AskOne(&survey.Select{
-			Message: "Which version do you want to install?",
+		// not worried about an error here as an active version of
+		// empty string just won't match any description below
+		activeVersion, _ := config.GetActiveVersion()
+		err = survey.AskOne(&survey.Select{
+			Message: "Which version do you want to use?",
 			Options: versions,
-		}, &version)
+			Description: func(value string, index int) string {
+				if value == activeVersion {
+					return "**active**"
+				}
+				return ""
+			},
+		}, &version, survey.WithPageSize(10))
 		if err != nil {
 			return err
 		}
-	}
-	if version == "latest" {
-		version = versions[0]
 	}
 	quartopath, ok := iv[version]
 	if !ok {
 		return fmt.Errorf("version %s not found", version)
 	}
-	err = os.MkdirAll(config.GetPathToActiveBinDir(), 0700)
+	err = os.MkdirAll(config.GetPathToActiveBinDir(), 0755)
 	if err != nil {
 		return err
 	}
@@ -97,7 +105,11 @@ func newUseCmd() *useCmd {
 		RunE: func(_ *cobra.Command, args []string) error {
 			//TODO: Add your logic to gather config to pass code here
 			log.WithField("opts", fmt.Sprintf("%+v", root.opts)).Trace("use-opts")
-			if err := newUse(root.opts, args[0]); err != nil {
+			var version string
+			if len(args) > 0 {
+				version = args[0]
+			}
+			if err := newUse(root.opts, version); err != nil {
 				return err
 			}
 			return nil

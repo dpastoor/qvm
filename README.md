@@ -94,8 +94,6 @@ which ones are available remotely?
 
 ```
 qvm ls --remote
-qvm ls --remote --since 2022-05-01 # releases since 2022-05-01, follows YYYY-MM-DD
-qvm ls --remote -n 10 # latest 10 releases
 ```
 
 ### installing versions
@@ -111,8 +109,20 @@ running `qvm install`
 qvm install
 ```
 
-
-
+```
+qvm install
+? Which version do you want to install?  [Use arrows to move, type to filter]
+> v0.9.637
+  v0.9.636 - **installed**
+  v0.9.634
+  v0.9.633
+  v0.9.632
+  v0.9.629 - **installed**
+  v0.9.628
+  v0.9.626
+  v0.9.624
+  v0.9.622
+```
 
 ```shell
 qvm install $QUARTO_VERSION $ANOTHER_QUARTO_VERSION
@@ -134,15 +144,22 @@ qvm install latest
 qvm use $QUARTO_VERSION
 ```
 
-### using a version in a particular shell session
+To interactively select a version, run `qvm use`
 
-At any point can use a particular version in your shell session:
-
-```shell
-qvm use $QUARTO_VERSION --local
 ```
-
-
+qvm use
+? Which version do you want to use?  [Use arrows to move, type to filter]
+> v0.9.636
+  v0.9.629 - **active**
+  v0.9.587
+  v0.9.583
+  v0.9.565
+  v0.9.563
+  v0.9.562
+  v0.9.561
+  v0.9.559
+  v0.9.550
+```
 ### programmatic support utilities
 
 ```shell
