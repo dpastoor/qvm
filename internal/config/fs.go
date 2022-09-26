@@ -43,6 +43,11 @@ func GetPathToActiveQuartoExe() string {
 	return filepath.Join(GetPathToActiveBinDir(), quartoExe)
 }
 func GetPathToVersionsDir() string {
+	// if running as root, install to /opt/quarto as an admin helper
+	if runtime.GOOS == "linux" && os.Getuid() == 0 {
+		return filepath.Join("opt", "quarto")
+	}
+
 	return filepath.Join(xdg.DataHome, "qvm", "versions")
 }
 
