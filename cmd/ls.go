@@ -20,19 +20,26 @@ type lsCmd struct {
 
 type lsOpts struct {
 	remote bool
+	num    int
 }
 
 func newLs(lsOpts lsOpts) error {
 	if lsOpts.remote {
 		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-		releases, err := gh.GetReleases(client, false)
+		releases, err := gh.GetReleases(client, lsOpts.num)
 		if err != nil {
 			return err
 		}
-		fmt.Println("version  | release date | description")
+		fmt.Println("version  | release date | description | type")
 		for _, r := range releases {
 			createdAt := r.GetCreatedAt()
-			fmt.Printf("%s | %s | %s\n", r.GetTagName(), createdAt.Format("2006-01-02"), r.GetName())
+			var releaseType string
+			if r.GetPrerelease() {
+				releaseType = "pre-release"
+			} else {
+				releaseType = "release"
+			}
+			fmt.Printf("%s |  %s  |   %s  | %s \n", r.GetTagName(), createdAt.Format("2006-01-02"), r.GetName(), releaseType)
 		}
 	} else {
 		entries, err := os.ReadDir(config.GetPathToVersionsDir())
@@ -43,6 +50,10 @@ func newLs(lsOpts lsOpts) error {
 		if err != nil {
 			return err
 		}
+		if len(entries) < lsOpts.num {
+			lsOpts.num = len(entries)
+		}
+		entries = entries[:lsOpts.num-1]
 		// TODO: replace with actual table
 		fmt.Println("version           | install time")
 		fmt.Println("--------------------------------")
@@ -78,6 +89,7 @@ func newLs(lsOpts lsOpts) error {
 
 func setLsOpts(lsOpts *lsOpts) {
 	lsOpts.remote = viper.GetBool("remote")
+	lsOpts.num = viper.GetInt("number")
 }
 
 func (opts *lsOpts) Validate() error {
@@ -108,6 +120,8 @@ func newLsCmd() *lsCmd {
 	}
 	cmd.Flags().Bool("remote", false, "list remote versions")
 	viper.BindPFlag("remote", cmd.Flags().Lookup("remote"))
+	cmd.Flags().IntP("number", "n", 10, "number of versions to list")
+	viper.BindPFlag("number", cmd.Flags().Lookup("number"))
 	root.cmd = cmd
 	return root
 }

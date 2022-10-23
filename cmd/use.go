@@ -7,11 +7,15 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/coreos/go-semver/semver"
 	"github.com/dpastoor/qvm/internal/config"
+	"github.com/dpastoor/qvm/internal/gh"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"golang.org/x/exp/maps"
 )
 
@@ -21,6 +25,7 @@ type useCmd struct {
 }
 
 type useOpts struct {
+	install bool
 }
 
 func newUse(useOpts useOpts, version string) error {
@@ -29,11 +34,50 @@ func newUse(useOpts useOpts, version string) error {
 		return err
 	}
 	versions := maps.Keys(iv)
-	sort.Sort(sort.Reverse(sort.StringSlice(versions)))
+	var semVersions semver.Versions
+	// sorting has some issues given how the character values will present individually
+	// for example a high value double digit patch version will be sorted before a lower
+	// value triple digit patch version. For example, sorting shows ordering like:
+	// v1.2.89 v1.2.237 v1.2.112 v1.1.84 v1.1.251 v1.1.189
+	// where .89 is > 237
+	// using go-semver this works
+	// as will get 1.2.237 1.2.112 1.2.89 1.1.251 1.1.189 1.1.168 1.1.84
+	for _, v := range versions {
+		ver, err := semver.NewVersion(strings.TrimPrefix(v, "v"))
+		if err != nil {
+			// we're just going to warn rather than error right now in case some
+			// releases end up not following semver and would rather the tool not blow up
+			log.Errorf("could not parse semver value for %s with err %s\n ", v, err)
+			continue
+		}
+		semVersions = append(semVersions, ver)
+	}
+	sort.Sort(sort.Reverse(semVersions))
+	// note this could be a bug if ever we do get nonparseable versions thrown out above
+	// will cross that bridge if we get there
+	for i, v := range semVersions {
+		versions[i] = "v" + v.String()
+	}
+	// convert back to string for later options
 	if len(iv) == 0 {
 		return errors.New("no installed versions found, please install a version first")
 	}
+	if version == "release" {
+		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
+		latestRelease, err := gh.GetLatestRelease(client)
+		if err != nil {
+			return err
+		}
+		version = latestRelease.GetTagName()
+	}
 	if version == "latest" {
+		if useOpts.install {
+			err = newInstall(installOpts{progress: true}, "latest")
+			if err != nil {
+				return err
+			}
+		}
+		// add back the v we trimmed for semver
 		version = versions[0]
 	}
 	if version == "" {
@@ -82,7 +126,7 @@ func newUse(useOpts useOpts, version string) error {
 }
 
 func setUseOpts(useOpts *useOpts) {
-
+	useOpts.install = viper.GetBool("install")
 }
 
 func (opts *useOpts) Validate() error {
@@ -115,6 +159,8 @@ func newUseCmd() *useCmd {
 			return nil
 		},
 	}
+	cmd.Flags().Bool("install", false, "install the version if not already installed")
+	viper.BindPFlag("install", cmd.Flags().Lookup("install"))
 	root.cmd = cmd
 	return root
 }
