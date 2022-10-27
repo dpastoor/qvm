@@ -53,7 +53,7 @@ func newLs(lsOpts lsOpts) error {
 		if len(entries) < lsOpts.num {
 			lsOpts.num = len(entries)
 		}
-		entries = entries[:lsOpts.num-1]
+		entries = entries[:lsOpts.num]
 		// TODO: replace with actual table
 		fmt.Println("version           | install time")
 		fmt.Println("--------------------------------")
