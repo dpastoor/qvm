@@ -59,11 +59,11 @@ func newUse(useOpts useOpts, version string) error {
 		versions[i] = "v" + v.String()
 	}
 	// convert back to string for later options
-	if len(iv) == 0 {
+	if len(iv) == 0 && !useOpts.install {
 		return errors.New("no installed versions found, please install a version first")
 	}
+	client := gh.NewClient(os.Getenv("GITHUB_PAT"))
 	if version == "release" {
-		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
 		latestRelease, err := gh.GetLatestRelease(client)
 		if err != nil {
 			return err
@@ -72,13 +72,16 @@ func newUse(useOpts useOpts, version string) error {
 	}
 	if version == "latest" {
 		if useOpts.install {
-			err = newInstall(installOpts{progress: true}, "latest")
+			// this will install further down if the version isn't already installed
+			repo, err := gh.GetReleases(client, 1)
 			if err != nil {
 				return err
 			}
+			version = repo[0].GetTagName()
+		} else {
+			version = versions[0]
 		}
 		// add back the v we trimmed for semver
-		version = versions[0]
 	}
 	if version == "" {
 		// not worried about an error here as an active version of
@@ -100,7 +103,14 @@ func newUse(useOpts useOpts, version string) error {
 	}
 	quartopath, ok := iv[version]
 	if !ok {
-		return fmt.Errorf("version %s not found", version)
+		if useOpts.install {
+			err, version = newInstall(installOpts{progress: true}, version)
+			if err != nil {
+				return err
+			}
+		} else {
+			return fmt.Errorf("version %s not found", version)
+		}
 	}
 	err = os.MkdirAll(config.GetPathToActiveBinDir(), 0755)
 	if err != nil {
