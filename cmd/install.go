@@ -25,16 +25,16 @@ type installOpts struct {
 	progress bool
 }
 
-func newInstall(installOpts installOpts, release string) error {
+func newInstall(installOpts installOpts, release string) (error, string) {
 	iv, err := config.GetInstalledVersions()
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
+		return err, ""
 	}
 	if release == "" {
 		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-		releases, err := gh.GetReleases(client, false)
+		releases, err := gh.GetReleases(client, 100)
 		if err != nil {
-			return err
+			return err, ""
 		}
 		versions := []string{}
 		for _, r := range releases {
@@ -52,30 +52,43 @@ func newInstall(installOpts installOpts, release string) error {
 			},
 		}, &release, survey.WithPageSize(10))
 		if err != nil {
-			return err
+			return err, ""
 		}
 	}
-	if release == "latest" {
+
+	// github's latest release is literally their latest release,
+	// not the latest tagged version
+	if release == "release" {
 		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
 		latestRelease, err := gh.GetLatestRelease(client)
 		if err != nil {
-			return err
+			return err, ""
 		}
 		release = latestRelease.GetTagName()
 	}
+
+	if release == "latest" {
+		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
+		releases, err := gh.GetReleases(client, 1)
+		if err != nil {
+			return err, ""
+		}
+		release = releases[0].GetTagName()
+	}
+
 	_, ok := iv[release]
 	if ok {
 		log.Infof("quarto version %s is already installed\n", release)
-		return nil
+		return nil, release
 	}
 	log.Info("attempting to install quarto version: ", release)
 	res, err := pipeline.DownloadReleaseVersion(release, runtime.GOOS, installOpts.progress)
 	if err != nil {
-		return err
+		return err, ""
 	}
 	log.Infof("new quarto version %s installed\n", release)
 	log.Debugf("new quarto version installed to %s\n", res)
-	return nil
+	return nil, release
 }
 
 func setInstallOpts(installOpts *installOpts) {
@@ -112,7 +125,7 @@ func newInstallCmd() *installCmd {
 				wg.Add(1)
 				go func(errc <-chan error, release string) {
 					defer wg.Done()
-					err := newInstall(root.opts, release)
+					err, _ := newInstall(root.opts, release)
 					errChan <- err
 				}(errChan, arg)
 			}

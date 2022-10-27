@@ -32,11 +32,19 @@ func GetLatestRelease(client *github.Client) (*github.RepositoryRelease, error) 
 	return rel, err
 }
 
-func GetReleases(client *github.Client, paginate bool) ([]*github.RepositoryRelease, error) {
-	opts := &github.ListOptions{PerPage: 50}
+func GetReleases(client *github.Client, n int) ([]*github.RepositoryRelease, error) {
+	// max of 50 per page
+	perPage := 50
+	remaining := n - perPage
+	if n < 50 {
+		remaining = 0
+		perPage = n
+	}
 	var releases []*github.RepositoryRelease
+	opts := &github.ListOptions{PerPage: perPage}
 	for {
 		start := time.Now()
+		log.Tracef("perpage: %d, remaining: %d", opts.PerPage, remaining)
 		rel, resp, err := client.Repositories.ListReleases(
 			context.Background(),
 			"quarto-dev",
@@ -48,8 +56,14 @@ func GetReleases(client *github.Client, paginate bool) ([]*github.RepositoryRele
 		}
 		releases = append(releases, rel...)
 		log.Tracef("repository release paginator: %s, page: %d", time.Since(start), resp.NextPage)
-		if !paginate || resp.NextPage == 0 {
+		if remaining <= 0 || resp.NextPage == 0 {
 			break
+		}
+		if remaining <= perPage {
+			opts.PerPage = remaining
+			remaining = 0
+		} else {
+			remaining -= perPage
 		}
 		opts.Page = resp.NextPage
 	}
