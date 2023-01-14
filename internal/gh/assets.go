@@ -23,6 +23,8 @@ func getOsAssetSuffix(os string) osAssetSuffix {
 		return macos
 	case "windows":
 		return win
+	case "rhel7":
+		return rhel7
 	default:
 		return unknown
 	}
@@ -35,6 +37,7 @@ const (
 	linuxamd64
 	macos
 	win
+	rhel7
 )
 
 func (o osAssetSuffix) String() string {
@@ -45,6 +48,8 @@ func (o osAssetSuffix) String() string {
 		return "macos.tar.gz"
 	case win:
 		return "win.zip"
+	case rhel7:
+		return "linux-rhel7-amd64.tar.gz"
 	default:
 		return "unknown"
 	}
@@ -78,10 +83,10 @@ func (wc *WriteCounter) Write(p []byte) (int, error) {
 // targetOs should be "windows", "darwin", "linux"
 func DownloadReleaseAsset(client *github.Client, tag string, targetOs string, progress bool) (string, error) {
 	switch targetOs {
-	case "windows", "darwin", "linux":
+	case "windows", "darwin", "linux", "rhel7":
 		break
 	default:
-		return "", fmt.Errorf("invalid target os: %s, must be one of linux,darwin,windows", targetOs)
+		return "", fmt.Errorf("invalid target os: %s, must be one of linux,darwin,windows,rhel7", targetOs)
 	}
 	release, err := GetRelease(client, tag)
 	if err != nil {
