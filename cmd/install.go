@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -82,7 +83,25 @@ func newInstall(installOpts installOpts, release string) (error, string) {
 		return nil, release
 	}
 	log.Info("attempting to install quarto version: ", release)
-	res, err := pipeline.DownloadReleaseVersion(release, runtime.GOOS, installOpts.progress)
+	osType := runtime.GOOS
+
+	// quarto has a specific custom version for rhel7/centos7 because
+	// of the old version of glibc so if on linux we need to also check
+	// what version to pull
+	if osType == "linux" {
+		// check if rhel7 system
+		if _, err := os.Stat("/etc/redhat-release"); err == nil {
+			releaseVersion, err := os.ReadFile("/etc/redhat-release")
+			if err != nil {
+				return err, ""
+			}
+			if strings.Contains(string(releaseVersion), "release 7") {
+				osType = "rhel7"
+			}
+		}
+	}
+
+	res, err := pipeline.DownloadReleaseVersion(release, osType, installOpts.progress)
 	if err != nil {
 		return err, ""
 	}
