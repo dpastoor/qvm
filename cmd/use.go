@@ -73,7 +73,7 @@ func newUse(useOpts useOpts, version string) error {
 	if version == "latest" {
 		if useOpts.install {
 			// this will install further down if the version isn't already installed
-			repo, err := gh.GetReleases(client, 1)
+			repo, err := gh.GetReleases(client, 1, "")
 			if err != nil {
 				return err
 			}

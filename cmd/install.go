@@ -24,6 +24,7 @@ type installCmd struct {
 
 type installOpts struct {
 	progress bool
+	release  string
 }
 
 func newInstall(installOpts installOpts, release string) (error, string) {
@@ -33,7 +34,7 @@ func newInstall(installOpts installOpts, release string) (error, string) {
 	}
 	if release == "" {
 		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-		releases, err := gh.GetReleases(client, 100)
+		releases, err := gh.GetReleases(client, 100, installOpts.release)
 		if err != nil {
 			return err, ""
 		}
@@ -70,7 +71,7 @@ func newInstall(installOpts installOpts, release string) (error, string) {
 
 	if release == "latest" {
 		client := gh.NewClient(os.Getenv("GITHUB_PAT"))
-		releases, err := gh.GetReleases(client, 1)
+		releases, err := gh.GetReleases(client, 1, "release")
 		if err != nil {
 			return err, ""
 		}
@@ -112,6 +113,7 @@ func newInstall(installOpts installOpts, release string) (error, string) {
 
 func setInstallOpts(installOpts *installOpts) {
 	installOpts.progress = !viper.GetBool("no-progress")
+	installOpts.release = viper.GetString("releasetype")
 }
 
 func (opts *installOpts) Validate() error {
@@ -168,6 +170,8 @@ func newInstallCmd() *installCmd {
 	}
 	cmd.Flags().BoolP("no-progress", "", false, "do not print download progress")
 	viper.BindPFlag("no-progress", cmd.Flags().Lookup("no-progress"))
+	cmd.Flags().String("release-type", "", "release type (release)")
+	viper.BindPFlag("releasetype", cmd.Flags().Lookup("release-type"))
 	root.cmd = cmd
 	return root
 }
