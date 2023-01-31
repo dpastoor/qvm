@@ -8,6 +8,7 @@ require (
 	github.com/coreos/go-semver v0.3.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/google/go-github/v44 v44.1.0
+	github.com/jedib0t/go-pretty/v6 v6.4.4
 	github.com/mholt/archiver/v4 v4.0.0-alpha.6.0.20220421032531-8a97d87612e9
 	github.com/muesli/mango-cobra v1.1.0
 	github.com/muesli/roff v0.1.0
@@ -28,7 +29,6 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.4.4 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
