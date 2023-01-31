@@ -59,7 +59,6 @@ func GetReleases(client *github.Client, n int, releaseType string) ([]*github.Re
 		if err != nil {
 			return releases, err
 		}
-		log.Infof("release type %s \n", releaseType)
 		if releaseType == "release" {
 			for _, r := range rel {
 				if !r.GetPrerelease() {
