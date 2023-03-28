@@ -32,13 +32,18 @@ func GetLatestRelease(client *github.Client) (*github.RepositoryRelease, error) 
 	return rel, err
 }
 
-func GetReleases(client *github.Client, n int) ([]*github.RepositoryRelease, error) {
+func GetReleases(client *github.Client, n int, releaseType string) ([]*github.RepositoryRelease, error) {
 	// max of 50 per page
-	perPage := 50
+	perPage := 100
 	remaining := n - perPage
+	// need different logic for releases
 	if n < 50 {
-		remaining = 0
-		perPage = n
+		if releaseType != "release" {
+			remaining = 0
+			perPage = n
+		} else {
+			remaining = n
+		}
 	}
 	var releases []*github.RepositoryRelease
 	opts := &github.ListOptions{PerPage: perPage}
@@ -54,16 +59,32 @@ func GetReleases(client *github.Client, n int) ([]*github.RepositoryRelease, err
 		if err != nil {
 			return releases, err
 		}
-		releases = append(releases, rel...)
+		if releaseType == "release" {
+			for _, r := range rel {
+				if !r.GetPrerelease() {
+					releases = append(releases, r)
+					remaining = remaining - 1
+				}
+				if remaining == 0 {
+					break
+				}
+			}
+		} else {
+			releases = append(releases, rel...)
+		}
 		log.Tracef("repository release paginator: %s, page: %d", time.Since(start), resp.NextPage)
 		if remaining <= 0 || resp.NextPage == 0 {
 			break
 		}
-		if remaining <= perPage {
-			opts.PerPage = remaining
-			remaining = 0
-		} else {
-			remaining -= perPage
+		// need different logic for releases as so many paginated results will be
+		// pre-releases
+		if releaseType != "release" {
+			if remaining <= perPage {
+				opts.PerPage = remaining
+				remaining = 0
+			} else {
+				remaining -= perPage
+			}
 		}
 		opts.Page = resp.NextPage
 	}
