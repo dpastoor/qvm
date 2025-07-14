@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mholt/archiver/v4"
+	"github.com/mholt/archives"
 )
 
 func trimTopDir(dir string) string {
@@ -22,7 +22,8 @@ func Unarchive(input io.Reader, dir string) error {
 	// like a writer, or if maybe if the function itself
 	// should take the handler as an input so can be as generic
 	// as you'd like in the handler
-	format, input, err := archiver.Identify("", input)
+	ctx := context.Background()
+	format, input, err := archives.Identify(ctx, "", input)
 	if err != nil {
 		return err
 	}
@@ -35,7 +36,7 @@ func Unarchive(input io.Reader, dir string) error {
 	// not sure if the handler itself is invoked serially or if it
 	// is concurrent?
 	dirMap := map[string]bool{}
-	handler := func(ctx context.Context, f archiver.File) error {
+	handler := func(ctx context.Context, f archives.FileInfo) error {
 		fileName := f.NameInArchive
 		// currently on osx we get a top dir of ./bin and ./share
 		// when in reality the
@@ -84,9 +85,9 @@ func Unarchive(input io.Reader, dir string) error {
 		return nil
 	}
 	// make sure the format is capable of extracting
-	ex, ok := format.(archiver.Extractor)
+	ex, ok := format.(archives.Extractor)
 	if !ok {
 		return err
 	}
-	return ex.Extract(context.Background(), input, nil, handler)
+	return ex.Extract(ctx, input, handler)
 }

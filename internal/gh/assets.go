@@ -7,17 +7,21 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/google/go-github/v44/github"
+	"github.com/google/go-github/v73/github"
 	log "github.com/sirupsen/logrus"
 )
 
 func getOsAssetSuffix(os string) osAssetSuffix {
 	switch os {
 	case "linux":
+		if runtime.GOARCH == "arm64" {
+			return linuxarm64
+		}
 		return linuxamd64
 	case "darwin":
 		return macos
@@ -35,6 +39,7 @@ type osAssetSuffix int64
 const (
 	unknown osAssetSuffix = iota
 	linuxamd64
+	linuxarm64
 	macos
 	win
 	rhel7
@@ -44,6 +49,8 @@ func (o osAssetSuffix) String() string {
 	switch o {
 	case linuxamd64:
 		return "linux-amd64.tar.gz"
+	case linuxarm64:
+		return "linux-arm64.tar.gz"
 	case macos:
 		return "macos.tar.gz"
 	case win:
