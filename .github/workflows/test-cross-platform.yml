@@ -69,6 +69,8 @@ jobs:
         
     - name: List available Quarto versions
       shell: bash
+      env:
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       run: |
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           ./qvm.exe ls
@@ -78,6 +80,8 @@ jobs:
         
     - name: Install a Quarto version
       shell: bash
+      env:
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       run: |
         # Install Quarto 1.7.32
         if [[ "${{ runner.os }}" == "Windows" ]]; then
