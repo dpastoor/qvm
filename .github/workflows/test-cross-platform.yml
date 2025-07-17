@@ -81,18 +81,18 @@ jobs:
       run: |
         # Install Quarto 1.7.32
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          ./qvm.exe install 1.7.32
+          ./qvm.exe install v1.7.32
         else
-          ./qvm install 1.7.32
+          ./qvm install v1.7.32
         fi
         
     - name: Use installed Quarto version
       shell: bash
       run: |
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          ./qvm.exe use 1.7.32
+          ./qvm.exe use v1.7.32
         else
-          ./qvm use 1.7.32
+          ./qvm use v1.7.32
         fi
         
     - name: Verify Quarto installation
