@@ -11,9 +11,6 @@ jobs:
     strategy:
       matrix:
         include:
-          # macOS
-          - os: macos-latest
-            arch: amd64
           - os: macos-14  # Apple Silicon
             arch: arm64
           
@@ -26,7 +23,7 @@ jobs:
             arch: amd64
           - os: ubuntu-latest
             arch: arm64
-            runs-on: buildjet-4vcpu-ubuntu-2204-arm
+            runs-on: ubuntu-latest-arm 
 
     runs-on: ${{ matrix.runs-on || matrix.os }}
     
