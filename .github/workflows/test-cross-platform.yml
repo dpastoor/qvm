@@ -17,9 +17,9 @@ jobs:
           - os: macos-14  # Apple Silicon
             arch: arm64
           
-          # Windows
-          - os: windows-latest
-            arch: amd64
+          # # Windows
+          # - os: windows-latest
+          #   arch: amd64
           
           # Linux
           - os: ubuntu-latest
