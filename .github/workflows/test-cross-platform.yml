@@ -21,9 +21,8 @@ jobs:
           # Linux
           - os: ubuntu-latest
             arch: amd64
-          - os: ubuntu-latest
+          - os: ubuntu-latest-arm
             arch: arm64
-            runs-on: ubuntu-latest-arm 
 
     runs-on: ${{ matrix.runs-on || matrix.os }}
     
