@@ -8,20 +8,20 @@ QVM (Quarto Version Manager) is a command-line tool written in Go that manages m
 
 ## Development Commands
 
-The project uses Task (Taskfile.yml) as the build tool. Common commands:
+The project uses Just (justfile) as the build tool. Common commands:
 
-- `task build` - Build the binary (outputs to ./qvm)
-- `task test` - Run tests with coverage
-- `task lint` - Run golangci-lint
-- `task fmt` - Format code with gofumpt
-- `task ci` - Run full CI pipeline (setup, build, test)
-- `task run -- <args>` - Run the binary with arguments (e.g., `task run -- ls`)
-- `task setup` - Install dependencies (go mod tidy)
-- `task cover` - Open test coverage report
+- `just build` - Build the binary (outputs to ./qvm)
+- `just test` - Run tests with coverage
+- `just lint` - Run golangci-lint
+- `just fmt` - Format code with gofumpt
+- `just ci` - Run full CI pipeline (setup, build, test)
+- `just run <args>` - Run the binary with arguments (e.g., `just run ls`)
+- `just setup` - Install dependencies (go mod tidy)
+- `just cover` - Open test coverage report
 
 For testing specific patterns:
-- `task test TEST_PATTERN=TestSpecificFunction`
-- `task test SOURCE_FILES=./internal/config/...`
+- `just test "" "" TestSpecificFunction`
+- `just test "" ./internal/config/...`
 
 ## Architecture
 
@@ -51,13 +51,13 @@ For testing specific patterns:
 
 ## Testing and Quality
 
-- Use `task test` for running tests with race detection and coverage
-- Use `task lint` to run golangci-lint
-- Use `task fmt` to format code with gofumpt
-- All CI steps can be run locally with `task ci`
+- Use `just test` for running tests with race detection and coverage
+- Use `just lint` to run golangci-lint
+- Use `just fmt` to format code with gofumpt
+- All CI steps can be run locally with `just ci`
 
 ## Release Process
 
-- `task release` - Creates and pushes new git tag using svu
+- `just release` - Creates and pushes new git tag using svu
 - Uses GoReleaser for building multi-platform binaries
 - Supports packaging for rpm, deb, and apk formats
