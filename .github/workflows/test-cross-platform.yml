@@ -34,13 +34,7 @@ jobs:
       uses: actions/setup-go@v5.5.0
       with:
         go-version-file: 'go.mod'
-        
-    - name: Set up Task
-      uses: arduino/setup-task@v2.0.0
-      with:
-        version: 3.x
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        
+    - uses: extractions/setup-just@v3
     - name: Cache Go modules
       uses: actions/cache@v4.2.3
       with:
@@ -52,7 +46,7 @@ jobs:
           ${{ runner.os }}-${{ matrix.arch }}-go-
           
     - name: Build QVM
-      run: task build
+      run: just build
       
     - name: Initialize QVM
       shell: bash
