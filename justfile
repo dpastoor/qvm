@@ -45,38 +45,18 @@ lint:
 # Run all CI steps
 ci: setup build test
 
-# Create a new tag
+# Build a snapshot release locally for testing
+snapshot:
+    goreleaser release --snapshot --clean --skip=publish
+
+# Run GoReleaser in release mode (triggered by CI on tags)
+goreleaser:
+    goreleaser release --clean
+
+# Create a new tag and push (triggers release workflow)
 release:
     #!/usr/bin/env bash
     NEXT=$(svu n)
     git tag $NEXT
     echo $NEXT
     git push origin --tags
-
-# Test a package (internal helper)
-_test-pkg Platform Image Cmd:
-    docker run --platform linux/{{Platform}} --rm --workdir /tmp -v $PWD/dist:/tmp {{Image}} sh -c '{{Cmd}} && qvm --version'
-
-# Test rpm packages
-test-rpm:
-    just _test-pkg amd64 fedora "rpm --nodeps -ivh qvm-*.x86_64.rpm"
-
-# Test deb packages
-test-deb:
-    just _test-pkg amd64 ubuntu "dpkg -i qvm*_amd64.deb"
-
-# Test apk packages
-test-apk:
-    just _test-pkg amd64 alpine "apk add --allow-untrusted -U qvm*_x86_64.apk"
-
-# Test all built linux packages
-test-packages: test-apk test-deb test-rpm
-
-# Run GoReleaser either in snapshot or release mode
-goreleaser: build
-    #!/usr/bin/env bash
-    SNAPSHOT=""
-    if [[ $GITHUB_REF != refs/tags/v* ]]; then
-        SNAPSHOT="--snapshot"
-    fi
-    goreleaser release --rm-dist $SNAPSHOT
