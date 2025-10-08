@@ -1,3 +1,5 @@
+version: 2
+
 project_name: qvm
 
 before:
@@ -22,7 +24,7 @@ universal_binaries:
     name_template: 'qvm'
 
 archives:
-  - format: tar.gz
+  - id: default
     name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}'
     format_overrides:
       - goos: windows
@@ -34,10 +36,10 @@ archives:
       - manpages/*
 
 brews:
-  - tap:
+  - repository:
       owner: dpastoor
       name: homebrew-tap
-    folder: Formula
+    directory: Formula
     test: |
       system "#{bin}/qvm -v"
     install: |-
@@ -87,4 +89,4 @@ release:
     ```
 
 snapshot:
-  name_template: '{{ incpatch .Version }}-next'
+  version_template: '{{ incpatch .Version }}-next'
