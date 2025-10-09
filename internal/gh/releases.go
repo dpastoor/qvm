@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/go-github/v44/github"
+	"github.com/google/go-github/v73/github"
 	log "github.com/sirupsen/logrus"
 )
 

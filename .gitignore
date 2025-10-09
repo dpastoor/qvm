@@ -9,3 +9,4 @@ completions/
 .task/
 coverage.txt
 qvm
+.ai-logs/

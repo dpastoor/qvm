@@ -2,22 +2,25 @@ package gh
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
-	"github.com/google/go-github/v44/github"
+	"github.com/google/go-github/v73/github"
 	log "github.com/sirupsen/logrus"
 )
 
 func getOsAssetSuffix(os string) osAssetSuffix {
 	switch os {
 	case "linux":
+		if runtime.GOARCH == "arm64" {
+			return linuxarm64
+		}
 		return linuxamd64
 	case "darwin":
 		return macos
@@ -35,6 +38,7 @@ type osAssetSuffix int64
 const (
 	unknown osAssetSuffix = iota
 	linuxamd64
+	linuxarm64
 	macos
 	win
 	rhel7
@@ -44,6 +48,8 @@ func (o osAssetSuffix) String() string {
 	switch o {
 	case linuxamd64:
 		return "linux-amd64.tar.gz"
+	case linuxarm64:
+		return "linux-arm64.tar.gz"
 	case macos:
 		return "macos.tar.gz"
 	case win:
@@ -90,11 +96,18 @@ func DownloadReleaseAsset(client *github.Client, tag string, targetOs string, pr
 	}
 	release, err := GetRelease(client, tag)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to get release %s: %w", tag, err)
 	}
-	asset := findAssetForOs(release.Assets, getOsAssetSuffix(targetOs))
+	suffix := getOsAssetSuffix(targetOs)
+	asset := findAssetForOs(release.Assets, suffix)
 	if asset == nil {
-		return "", errors.New("no release asset found")
+		// Provide helpful error with specific architecture info
+		archInfo := ""
+		if targetOs == "linux" {
+			archInfo = fmt.Sprintf(" (%s)", runtime.GOARCH)
+		}
+		return "", fmt.Errorf("no release asset found for %s%s with suffix '%s'. This version may not support your platform/architecture. Available assets: %s",
+			targetOs, archInfo, suffix.String(), listAvailableAssets(release.Assets))
 	}
 	// shouldn't need the redirect url given should follow redirects with the http client
 	log.Tracef("fetching information to download release asset from %s\n", asset.GetBrowserDownloadURL())
@@ -133,4 +146,19 @@ func findAssetForOs(assets []*github.ReleaseAsset, suffix osAssetSuffix) *github
 		}
 	}
 	return nil
+}
+
+func listAvailableAssets(assets []*github.ReleaseAsset) string {
+	var names []string
+	for _, asset := range assets {
+		name := asset.GetName()
+		// Only list the actual platform archives, not checksums/metadata
+		if strings.HasSuffix(name, ".tar.gz") || strings.HasSuffix(name, ".zip") {
+			names = append(names, name)
+		}
+	}
+	if len(names) == 0 {
+		return "none"
+	}
+	return strings.Join(names, ", ")
 }

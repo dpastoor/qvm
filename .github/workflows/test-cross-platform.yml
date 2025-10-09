@@ -1,0 +1,111 @@
+name: Cross-Platform Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-cross-platform:
+    strategy:
+      matrix:
+        include:
+          - os: macos-14  # Apple Silicon
+            arch: arm64
+          
+          # # Windows
+          # - os: windows-latest
+          #   arch: amd64
+          
+          # Linux
+          - os: ubuntu-latest
+            arch: amd64
+          - os: ubuntu-22.04-arm
+            arch: arm64
+
+    runs-on: ${{ matrix.runs-on || matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4.2.2
+      
+    - name: Set up Go
+      uses: actions/setup-go@v5.5.0
+      with:
+        go-version-file: 'go.mod'
+    - uses: extractions/setup-just@v3
+    - name: Cache Go modules
+      uses: actions/cache@v4.2.3
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: ${{ runner.os }}-${{ matrix.arch }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.arch }}-go-
+          
+    - name: Build QVM
+      run: just build
+      
+    - name: Initialize QVM
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./qvm.exe init
+        else
+          ./qvm init
+        fi
+        
+    - name: List available Quarto versions
+      shell: bash
+      env:
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./qvm.exe ls
+        else
+          ./qvm ls
+        fi
+        
+    - name: Install a Quarto version
+      shell: bash
+      env:
+        GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        # Install Quarto 1.7.32
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./qvm.exe install v1.7.32
+        else
+          ./qvm install v1.7.32
+        fi
+        
+    - name: Use installed Quarto version
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          ./qvm.exe use v1.7.32
+        else
+          ./qvm use v1.7.32
+        fi
+        
+    - name: Verify Quarto installation
+      shell: bash
+      run: |
+        # Add QVM path to current session
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          export PATH="$(./qvm.exe path active):$PATH"
+        else
+          export PATH="$(./qvm path active):$PATH"
+        fi
+        
+        # Verify quarto command works and shows correct version
+        quarto --version
+        
+        # Check that the version contains 1.7.32
+        if quarto --version | grep -q "1.7.32"; then
+          echo "✅ Quarto version verification successful"
+        else
+          echo "❌ Quarto version verification failed"
+          exit 1
+        fi
